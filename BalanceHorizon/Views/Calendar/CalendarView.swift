@@ -22,6 +22,10 @@ struct CalendarView: View {
     @State private var showGoals = false
     @State private var currentMilestone: Milestone? = nil
     @State private var milestoneTracker = MilestoneTracker()
+    @State private var clipboardDetector = ClipboardDetector()
+    @State private var voiceManager = VoiceInputManager()
+    @State private var showVoiceInput = false
+    @State private var recurringSuggestionEngine = RecurringSuggestionEngine()
 
     private var settings: AppSettings? { settingsArray.first }
 
@@ -33,31 +37,42 @@ struct CalendarView: View {
 
     var body: some View {
         NavigationStack {
-            mainContent
-                .navigationTitle("Balance Horizon")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar { toolbarItems }
-                .modifier(CalendarSheetsModifier(
-                    vm: $vm,
-                    showQuickAdd: $showQuickAdd,
-                    showPaywall: $showPaywall,
-                    showShareCard: $showShareCard,
-                    showGoals: $showGoals
-                ))
-                .overlay { radialMenuOverlay }
-                .celebrationOverlay(milestone: currentMilestone) {
-                    currentMilestone = nil
-                }
-                .onChange(of: transactions.count) {
-                    refreshProjections()
-                    checkMilestones()
-                }
-                .onChange(of: vm.currentMonth) { refreshProjections() }
-                .onChange(of: settings?.startingBalance) { refreshProjections() }
-                .onAppear {
-                    refreshProjections()
-                    checkMilestones()
-                }
+            ZStack(alignment: .top) {
+                mainContent
+                    .navigationTitle("Balance Horizon")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar { toolbarItems }
+                    .modifier(CalendarSheetsModifier(
+                        vm: $vm,
+                        showQuickAdd: $showQuickAdd,
+                        showPaywall: $showPaywall,
+                        showShareCard: $showShareCard,
+                        showGoals: $showGoals
+                    ))
+                    .overlay { radialMenuOverlay }
+                    .celebrationOverlay(milestone: currentMilestone) {
+                        currentMilestone = nil
+                    }
+
+                // Clipboard suggestion banner
+                clipboardBanner
+
+                // Recurring suggestion banner
+                recurringSuggestionBanner
+            }
+            .onChange(of: transactions.count) {
+                refreshProjections()
+                checkMilestones()
+                checkRecurringSuggestions()
+            }
+            .onChange(of: vm.currentMonth) { refreshProjections() }
+            .onChange(of: settings?.startingBalance) { refreshProjections() }
+            .onAppear {
+                refreshProjections()
+                checkMilestones()
+                clipboardDetector.checkClipboard()
+                checkRecurringSuggestions()
+            }
         }
     }
 
@@ -122,6 +137,64 @@ struct CalendarView: View {
 
     private func refreshProjections() {
         vm.refreshProjections(transactions: transactions, settings: settings)
+    }
+
+    // MARK: - Clipboard Banner
+
+    @ViewBuilder
+    private var clipboardBanner: some View {
+        if clipboardDetector.showingSuggestion {
+            ClipboardSuggestionBanner(
+                detector: clipboardDetector,
+                onAdd: { detectedAmount in
+                    let tx = Transaction(
+                        date: .now,
+                        amount: detectedAmount,
+                        type: .expense,
+                        category: "General"
+                    )
+                    context.insert(tx)
+                }
+            )
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .zIndex(10)
+        }
+    }
+
+    // MARK: - Recurring Suggestion Banner
+
+    @ViewBuilder
+    private var recurringSuggestionBanner: some View {
+        if !recurringSuggestions.isEmpty {
+            RecurringSuggestionBanner(
+                suggestions: recurringSuggestions,
+                onAccept: { suggestion in
+                    let tx = Transaction(
+                        date: .now,
+                        amount: suggestion.amount,
+                        type: .expense,
+                        desc: suggestion.description,
+                        category: suggestion.category,
+                        isRecurring: true,
+                        recurringFrequency: suggestion.suggestedFrequency
+                    )
+                    context.insert(tx)
+                },
+                onDismiss: { _ in }
+            )
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .padding(.top, 50)
+            .zIndex(9)
+        }
+    }
+
+    @State private var recurringSuggestions: [RecurringSuggestionEngine.RecurringSuggestion] = []
+
+    private func checkRecurringSuggestions() {
+        let suggestions = recurringSuggestionEngine.detectPatterns(transactions: transactions)
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            recurringSuggestions = suggestions
+        }
     }
 
     private func checkMilestones() {
@@ -360,7 +433,18 @@ struct CalendarView: View {
     // MARK: - Add Buttons
 
     private var addButtonStack: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
+            // Voice input (microphone)
+            VoiceInputButton(manager: voiceManager) { amount, category in
+                let tx = Transaction(
+                    date: .now,
+                    amount: amount,
+                    type: .expense,
+                    category: category
+                )
+                context.insert(tx)
+            }
+
             // Quick add (lightning bolt)
             Button {
                 let gen = UIImpactFeedbackGenerator(style: .light)

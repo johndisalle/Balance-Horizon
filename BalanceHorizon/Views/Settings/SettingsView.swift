@@ -15,6 +15,7 @@ struct SettingsView: View {
     @State private var showingPaywall = false
     @State private var showingAccountEditor = false
     @State private var showingThemePicker = false
+    @State private var showingFinanceKit = false
     @State private var editingBalance: String = ""
     @State private var showBalanceEditor = false
     @State private var showShareSheet = false
@@ -26,6 +27,7 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 balanceSection
+                autoImportSection
                 accountsSection
                 categoriesSection
                 appearanceSection
@@ -47,6 +49,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingThemePicker) {
                 ThemePickerView()
+            }
+            .sheet(isPresented: $showingFinanceKit) {
+                FinanceKitSettingsView()
             }
             .sheet(isPresented: $showShareSheet) {
                 if let url = exportFileURL {
@@ -139,6 +144,23 @@ struct SettingsView: View {
                     Spacer()
                     Text("\(settings?.categories.count ?? 0)")
                         .foregroundStyle(.secondary)
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private var autoImportSection: some View {
+        Section("Auto Import") {
+            Button {
+                showingFinanceKit = true
+            } label: {
+                HStack {
+                    Label("Apple Wallet Import", systemImage: "wallet.pass")
+                        .foregroundStyle(.primary)
+                    Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption)
                         .foregroundStyle(.secondary)
