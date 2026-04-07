@@ -56,10 +56,13 @@ struct OnboardingView: View {
             .disabled(!buttonEnabled)
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
-            .sheet(isPresented: $showBillQuickAdd) {
+            .sheet(isPresented: $showBillQuickAdd, onDismiss: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    currentPage = 4
+                }
+            }) {
                 BillQuickAddView {
                     showBillQuickAdd = false
-                    withAnimation { currentPage = 4 }
                 }
             }
         }
