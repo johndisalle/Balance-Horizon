@@ -120,7 +120,7 @@ struct ConfettiView: View {
 
         // Physics integration
         let baseX = canvasSize.width / 2 + particle.vx * t
-        let wobble = particle.wobbleAmplitude * sin(particle.wobbleFrequency * t + particle.wobblePhase)
+        let wobble = particle.wobbleAmplitude * Foundation.sin(particle.wobbleFrequency * t + particle.wobblePhase)
         let px = baseX + wobble
         let py = canvasSize.height * 0.15
             + particle.vy * t

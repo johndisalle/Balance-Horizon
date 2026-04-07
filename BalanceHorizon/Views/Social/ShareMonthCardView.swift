@@ -666,13 +666,13 @@ struct ShareMonthCardView: View {
                 .frame(width: fitWidth, height: fitWidth / cardAspect)
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                 .shadow(
-                    color: Color.purple.opacity(0.15 + 0.08 * sin(shadowPhase)),
-                    radius: 20 + 5 * sin(shadowPhase),
+                    color: Color.purple.opacity(0.15 + 0.08 * Foundation.sin(shadowPhase)),
+                    radius: 20 + 5 * Foundation.sin(shadowPhase),
                     x: 0,
-                    y: 8 + 3 * sin(shadowPhase)
+                    y: 8 + 3 * Foundation.sin(shadowPhase)
                 )
                 .shadow(
-                    color: Color.blue.opacity(0.1 + 0.05 * sin(shadowPhase + 1)),
+                    color: Color.blue.opacity(0.1 + 0.05 * Foundation.sin(shadowPhase + 1)),
                     radius: 30,
                     x: 0,
                     y: 12

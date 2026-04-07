@@ -49,8 +49,8 @@ struct RadialQuickAddMenu: View {
     private func offset(for index: Int) -> CGSize {
         let a = angle(for: index).radians
         return CGSize(
-            width: cos(a) * radius,
-            height: sin(a) * radius
+            width: CGFloat(Foundation.cos(a)) * radius,
+            height: CGFloat(Foundation.sin(a)) * radius
         )
     }
 
