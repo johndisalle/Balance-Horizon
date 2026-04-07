@@ -245,7 +245,9 @@ private struct SmoothLineFill: Shape {
             )
         }
 
-        path.addLine(to: CGPoint(x: points.last!.x, y: bottomY))
+        if let lastPoint = points.last {
+            path.addLine(to: CGPoint(x: lastPoint.x, y: bottomY))
+        }
         path.closeSubpath()
         return path
     }
