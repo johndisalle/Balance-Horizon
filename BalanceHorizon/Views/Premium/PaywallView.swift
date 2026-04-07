@@ -148,7 +148,7 @@ struct PaywallView: View {
     }
 
     private var trialNote: some View {
-        Text("Start with a 7-day free trial. Cancel anytime.")
+        Text("Start with a 3-day free trial. Cancel anytime.")
             .font(.footnote.weight(.medium))
             .foregroundStyle(.secondary)
     }
@@ -166,7 +166,15 @@ struct PaywallView: View {
                 .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
-                .padding(.bottom, 20)
+
+            HStack(spacing: 16) {
+                Link("Privacy Policy", destination: URL(string: "https://johndisalle.github.io/Balance-Horizon/privacy-policy")!)
+                Text("·").foregroundStyle(.tertiary)
+                Link("Terms of Service", destination: URL(string: "https://johndisalle.github.io/Balance-Horizon/terms-of-service")!)
+            }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            .padding(.bottom, 20)
         }
     }
 

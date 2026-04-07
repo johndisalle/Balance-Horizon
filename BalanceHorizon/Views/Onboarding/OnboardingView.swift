@@ -13,6 +13,10 @@ struct OnboardingView: View {
     @State private var startingBalance: String = ""
     @State private var showPreview = false
     @State private var showBillQuickAdd = false
+    @State private var revealedDays: Int = 0
+    @State private var animationTimer: Timer?
+    @State private var flashingDay: Int? = nil
+    @State private var showSummaryCard = false
 
     private var settings: AppSettings {
         if let existing = settingsArray.first { return existing }
@@ -245,7 +249,9 @@ struct OnboardingView: View {
     // MARK: - Page 5: Live Preview
 
     private var previewPage: some View {
-        VStack(spacing: 16) {
+        let sampleDays = generateSampleWeek(startingBalance: parsedBalance ?? 2500)
+
+        return VStack(spacing: 12) {
             Text("Here's Your Future")
                 .font(.title2.weight(.bold))
                 .padding(.top, 20)
@@ -256,9 +262,46 @@ struct OnboardingView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
-            // Mini calendar preview
-            previewCalendar
+            // Running balance counter
+            if revealedDays > 0 {
+                let currentBalance = sampleDays[min(revealedDays - 1, sampleDays.count - 1)].balance
+                HStack(spacing: 4) {
+                    Text("Balance:")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    Text("$\(Int(currentBalance))")
+                        .font(.title3.weight(.bold).monospacedDigit())
+                        .foregroundStyle(animatedBalanceColor(currentBalance))
+                        .contentTransition(.numericText())
+                        .animation(.spring(response: 0.3), value: Int(currentBalance))
+                }
+                .transition(.opacity)
+            }
+
+            // Animated mini calendar
+            animatedPreviewCalendar(sampleDays: sampleDays)
                 .padding(.horizontal, 12)
+
+            // Summary card after all days revealed
+            if showSummaryCard {
+                let first = sampleDays.first!.balance
+                let last = sampleDays.last!.balance
+                let delta = last - first
+                VStack(spacing: 4) {
+                    Text("In 2 weeks, your balance goes from $\(Int(first)) to $\(Int(last))")
+                        .font(.subheadline.weight(.semibold))
+                        .multilineTextAlignment(.center)
+                    Text("\(delta >= 0 ? "+" : "")$\(Int(delta))")
+                        .font(.title3.weight(.bold).monospacedDigit())
+                        .foregroundStyle(delta >= 0 ? .green : .red)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity)
+                .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.2), lineWidth: 1))
+                .padding(.horizontal, 12)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
 
             // Sample transactions shown
             VStack(alignment: .leading, spacing: 8) {
@@ -271,7 +314,7 @@ struct OnboardingView: View {
                 SampleRow(icon: "arrow.up.right", color: .red, text: "Utilities", amount: "-$120/mo")
             }
             .padding(.horizontal, 24)
-            .padding(.vertical, 8)
+            .padding(.vertical, 4)
 
             Text("You can edit or delete these anytime.")
                 .font(.caption)
@@ -279,27 +322,84 @@ struct OnboardingView: View {
 
             Spacer(minLength: 0)
         }
+        .onAppear {
+            revealedDays = 0
+            showSummaryCard = false
+            flashingDay = nil
+            startRevealTimer(totalDays: sampleDays.count)
+        }
+        .onDisappear {
+            animationTimer?.invalidate()
+            animationTimer = nil
+        }
     }
 
-    private var previewCalendar: some View {
-        let balance = parsedBalance ?? 2500
-        let sampleDays = generateSampleWeek(startingBalance: balance)
+    private func startRevealTimer(totalDays: Int) {
+        animationTimer?.invalidate()
+        animationTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { timer in
+            if revealedDays < totalDays {
+                let nextIndex = revealedDays
+                // Check if this day has a big bill — flash it red briefly
+                if billDayIndices.contains(nextIndex) {
+                    flashingDay = nextIndex
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            flashingDay = nil
+                        }
+                    }
+                }
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                    revealedDays += 1
+                }
+            } else {
+                timer.invalidate()
+                animationTimer = nil
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                    showSummaryCard = true
+                }
+            }
+        }
+    }
+
+    // Indices of days that have notable bill hits (0-based)
+    private var billDayIndices: Set<Int> {
+        [0, 2, 4, 6, 9, 13]
+    }
+
+    private func animatedBalanceColor(_ balance: Double) -> Color {
+        if balance >= 500 { return .green }
+        if balance >= 0 { return .orange }
+        return .red
+    }
+
+    private func animatedPreviewCalendar(sampleDays: [SampleDay]) -> some View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
         return LazyVGrid(columns: columns, spacing: 4) {
-            ForEach(sampleDays, id: \.date) { day in
+            ForEach(Array(sampleDays.enumerated()), id: \.offset) { index, day in
+                let isRevealed = index < revealedDays
+                let isFlashing = flashingDay == index
+
                 VStack(spacing: 2) {
-                    Text(day.date.dayNumber)
+                    Text("\(index + 1)")
                         .font(.caption2.weight(.medium))
                     Text(day.balance.compactCurrency)
                         .font(.system(size: 8, weight: .bold, design: .rounded))
-                        .foregroundStyle(balanceColor(day.balance))
+                        .foregroundStyle(animatedBalanceColor(day.balance))
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
-                .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 6))
+                .background(
+                    isFlashing
+                        ? Color.red.opacity(0.3)
+                        : Color.cardBackground,
+                    in: RoundedRectangle(cornerRadius: 6)
+                )
+                .scaleEffect(isRevealed ? 1.0 : 0.0)
+                .opacity(isRevealed ? 1.0 : 0.0)
+                .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isRevealed)
             }
         }
         .padding(8)
@@ -315,7 +415,7 @@ struct OnboardingView: View {
 
     private func balanceColor(_ balance: Double) -> Color {
         if balance < 0 { return .red }
-        if balance < 100 { return .orange }
+        if balance < 500 { return .orange }
         return .green
     }
 
@@ -330,20 +430,35 @@ struct OnboardingView: View {
         var balance = startingBalance
         var days: [SampleDay] = []
 
+        // Deterministic small daily expenses per day (seeded to look realistic)
+        let dailyExpenses: [Double] = [20, 18, 22, 15, 25, 19, 17, 23, 16, 21, 24, 18, 20, 22]
+
         for i in 0..<14 {
             let date = cal.date(byAdding: .day, value: i, to: today)!
-            // Simulate: salary on 1st, rent on 1st, groceries weekly, small daily expenses
-            let dayOfMonth = cal.component(.day, from: date)
-            let weekday = cal.component(.weekday, from: date)
+            let dayNum = i + 1 // 1-based day number
 
-            if dayOfMonth == 1 {
-                balance += 3000  // salary
-                balance -= 1200  // rent
+            // Apply scheduled transactions
+            switch dayNum {
+            case 1:
+                balance += 3000   // salary
+                balance -= 1200   // rent
+            case 3:
+                balance -= 150    // groceries
+            case 5:
+                balance -= 45     // dining
+            case 7:
+                balance -= 150    // groceries
+                balance -= 65     // internet
+            case 10:
+                balance -= 120    // utilities
+            case 14:
+                balance -= 50     // shopping
+            default:
+                break
             }
-            if weekday == 2 { // Monday = groceries
-                balance -= 150
-            }
-            balance -= Double.random(in: 10...35) // daily spending
+
+            // Small daily expense
+            balance -= dailyExpenses[i]
 
             days.append(SampleDay(date: date, balance: balance))
         }

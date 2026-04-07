@@ -26,6 +26,7 @@ struct CalendarView: View {
     @State private var voiceManager = VoiceInputManager()
     @State private var showVoiceInput = false
     @State private var recurringSuggestionEngine = RecurringSuggestionEngine()
+    @State private var streakTracker = StreakTracker()
 
     private var settings: AppSettings? { settingsArray.first }
 
@@ -68,6 +69,7 @@ struct CalendarView: View {
                 refreshProjections()
                 checkMilestones()
                 checkRecurringSuggestions()
+                streakTracker.recordActivity()
             }
         }
     }
@@ -77,6 +79,7 @@ struct CalendarView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     monthNavigationHeader
+                    StreakBadgeView(tracker: streakTracker)
                     BudgetGoalRingsBar()
                     widgetPromoBanner
                     balanceChart
