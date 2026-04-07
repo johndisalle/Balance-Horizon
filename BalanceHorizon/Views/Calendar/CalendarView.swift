@@ -66,7 +66,7 @@ struct CalendarView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     monthNavigationHeader
-                    BudgetGoalRingsBar(onShowGoals: { showGoals = true })
+                    BudgetGoalRingsBar()
                     widgetPromoBanner
                     balanceChart
                     calendarGrid
