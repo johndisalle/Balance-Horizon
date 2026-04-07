@@ -22,7 +22,7 @@ struct DayDetailSheet: View {
                     if let balance {
                         Text(balance.currencyFormatted)
                             .font(.system(size: 36, weight: .bold, design: .rounded))
-                            .foregroundStyle(balance >= 0 ? .primary : .red)
+                            .foregroundStyle(balance >= 0 ? Color.primary : Color.red)
                     }
 
                     Text("Projected Balance")
