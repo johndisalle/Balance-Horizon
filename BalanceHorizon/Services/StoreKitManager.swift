@@ -5,7 +5,9 @@
 
 import Foundation
 import StoreKit
-import SwiftData
+
+/// Use a typealias to disambiguate StoreKit's Transaction from our SwiftData model
+typealias StoreTransaction = StoreKit.Transaction
 
 /// Product identifiers — configure these in App Store Connect
 enum ProductID {
@@ -74,7 +76,7 @@ final class StoreKitManager {
 
     private func listenForTransactions() -> Task<Void, Error> {
         Task.detached {
-            for await result in Transaction.updates {
+            for await result in StoreTransaction.updates {
                 do {
                     let transaction = try self.checkVerified(result)
                     await transaction.finish()
@@ -89,18 +91,19 @@ final class StoreKitManager {
     // MARK: - Entitlement Check
 
     func updatePurchasedProducts() async {
-        var purchased = Set<String>()
-        for await result in Transaction.currentEntitlements {
+        var purchasedIDs = Set<String>()
+        for await result in StoreTransaction.currentEntitlements {
             do {
                 let transaction = try checkVerified(result)
-                purchased.insert(transaction.productID)
+                purchasedIDs.insert(transaction.productID)
             } catch {
                 continue
             }
         }
+        let ids = purchasedIDs
         await MainActor.run {
-            self.purchasedProductIDs = purchased
-            self.isPremium = !purchased.isEmpty
+            self.purchasedProductIDs = ids
+            self.isPremium = !ids.isEmpty
         }
     }
 
