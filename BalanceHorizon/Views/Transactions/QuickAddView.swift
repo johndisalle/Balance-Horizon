@@ -96,6 +96,21 @@ struct QuickAddView: View {
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)
+
+            // Paste from clipboard button
+            Button {
+                let detector = ClipboardDetector()
+                detector.checkClipboard()
+                if let detected = detector.detectedAmount {
+                    amount = String(format: "%.2f", detected)
+                    let gen = UIImpactFeedbackGenerator(style: .light)
+                    gen.impactOccurred()
+                }
+            } label: {
+                Label("Paste from clipboard", systemImage: "doc.on.clipboard")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.blue)
+            }
         }
         .padding(.vertical, 20)
         .padding(.horizontal, 16)

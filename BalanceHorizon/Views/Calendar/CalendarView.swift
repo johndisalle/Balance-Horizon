@@ -54,9 +54,6 @@ struct CalendarView: View {
                         currentMilestone = nil
                     }
 
-                // Clipboard suggestion banner
-                clipboardBanner
-
                 // Recurring suggestion banner
                 recurringSuggestionBanner
             }
@@ -71,10 +68,6 @@ struct CalendarView: View {
                 refreshProjections()
                 checkMilestones()
                 checkRecurringSuggestions()
-                // Delay clipboard check to avoid paste dialog on fresh launch
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    clipboardDetector.checkClipboard()
-                }
             }
         }
     }

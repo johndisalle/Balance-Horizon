@@ -13,19 +13,10 @@ class ClipboardDetector {
 
     private let lastAmountKey = "lastClipboardAmount"
 
-    /// Reads the system clipboard and attempts to parse a dollar amount from its contents.
-    /// Only triggers the suggestion banner when the amount differs from the last detected value.
-    /// Uses hasStrings check first to avoid the iOS paste permission dialog on cold launch.
+    /// Call this only from an explicit user action (e.g. tapping a "Paste" button).
+    /// Accessing UIPasteboard.general.string always triggers the iOS paste permission
+    /// dialog, so we never do it automatically.
     func checkClipboard() {
-        // hasStrings does NOT trigger the paste permission dialog
-        guard UIPasteboard.general.hasStrings else { return }
-        // Delay slightly so it doesn't fire during view transitions
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
-            self.performClipboardCheck()
-        }
-    }
-
-    private func performClipboardCheck() {
         guard let raw = UIPasteboard.general.string, !raw.isEmpty else { return }
 
         guard let amount = parseDollarAmount(from: raw) else { return }
