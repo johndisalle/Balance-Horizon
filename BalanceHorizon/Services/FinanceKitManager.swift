@@ -72,10 +72,9 @@ class FinanceKitManagerImpl {
             let description: String
             if let merchant = fkTx.merchantName {
                 description = merchant
-            } else if let original = fkTx.originalTransactionDescription {
-                description = original
             } else {
-                description = "Apple Wallet"
+                let original = fkTx.originalTransactionDescription
+                description = original.isEmpty ? "Apple Wallet" : original
             }
 
             let mccValue = fkTx.merchantCategoryCode.flatMap { Int($0.rawValue) }
