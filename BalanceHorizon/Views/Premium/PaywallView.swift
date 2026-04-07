@@ -18,7 +18,7 @@ struct PaywallView: View {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 56))
                             .foregroundStyle(.yellow)
-                            .symbolEffect(.bounce)
+                            .symbolEffect(.pulse)
 
                         Text("Balance Horizon Premium")
                             .font(.title.weight(.bold))
