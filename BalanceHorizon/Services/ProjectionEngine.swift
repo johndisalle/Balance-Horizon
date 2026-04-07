@@ -86,7 +86,8 @@ final class ProjectionEngine {
                     transactions: dailyTransactions[current] ?? []
                 )
             }
-            current = cal.date(byAdding: .day, value: 1, to: current)!
+            guard let next = cal.date(byAdding: .day, value: 1, to: current) else { break }
+            current = next
         }
 
         return result

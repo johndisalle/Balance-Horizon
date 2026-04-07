@@ -359,7 +359,7 @@ struct OnboardingView: View {
 
         if !hasIncome {
             let cal = Calendar.current
-            let firstOfMonth = cal.date(from: cal.dateComponents([.year, .month], from: .now))!
+            guard let firstOfMonth = cal.date(from: cal.dateComponents([.year, .month], from: .now)) else { return }
             let salary = Transaction(
                 date: firstOfMonth,
                 amount: 3000,

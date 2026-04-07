@@ -336,7 +336,7 @@ struct BillQuickAddView: View {
             case .monthly, .quarterly, .yearly:
                 // 1st of next month
                 var comps = cal.dateComponents([.year, .month], from: today)
-                comps.month! += 1
+                comps.month = (comps.month ?? 1) + 1
                 comps.day = 1
                 startDate = cal.date(from: comps) ?? today
             }

@@ -66,7 +66,7 @@ struct ContentRootView: View {
         let engine = ProjectionEngine()
         let cal = Calendar.current
         let today = cal.startOfDay(for: .now)
-        let future = cal.date(byAdding: .month, value: 12, to: today)!
+        guard let future = cal.date(byAdding: .month, value: 12, to: today) else { return }
 
         let balances = engine.computeBalances(
             transactions: transactions,
@@ -96,7 +96,7 @@ struct ContentRootView: View {
         let engine = ProjectionEngine()
         let cal = Calendar.current
         let today = cal.startOfDay(for: .now)
-        let future = cal.date(byAdding: .month, value: 12, to: today)!
+        guard let future = cal.date(byAdding: .month, value: 12, to: today) else { return }
 
         let balances = engine.computeBalances(
             transactions: transactions,

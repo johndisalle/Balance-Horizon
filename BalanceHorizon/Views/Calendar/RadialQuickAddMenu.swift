@@ -121,6 +121,7 @@ struct RadialQuickAddMenu: View {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Add \(item.category) expense")
         .offset(itemOffset)
         .scaleEffect(scale)
         .animation(
