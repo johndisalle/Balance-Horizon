@@ -334,34 +334,53 @@ struct CalendarView: View {
             return (day, bal)
         }
 
+        // Calculate Y-axis domain with padding so the line isn't squished
+        let balances = chartData.map(\.1)
+        let minBal = (balances.min() ?? 0)
+        let maxBal = (balances.max() ?? 1000)
+        let padding = max((maxBal - minBal) * 0.15, 50)
+        let yMin = minBal - padding
+        let yMax = maxBal + padding
+
         return Group {
             if !chartData.isEmpty {
                 Chart(chartData, id: \.0) { item in
-                    AreaMark(
+                    LineMark(
                         x: .value("Day", item.0, unit: .day),
                         y: .value("Balance", item.1)
                     )
                     .foregroundStyle(
                         .linearGradient(
-                            colors: [.blue.opacity(0.3), .blue.opacity(0.05)],
+                            colors: [.blue, .cyan],
+                            startPoint: .leading, endPoint: .trailing
+                        )
+                    )
+                    .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .interpolationMethod(.catmullRom)
+
+                    AreaMark(
+                        x: .value("Day", item.0, unit: .day),
+                        yStart: .value("Min", yMin),
+                        yEnd: .value("Balance", item.1)
+                    )
+                    .foregroundStyle(
+                        .linearGradient(
+                            colors: [.blue.opacity(0.2), .blue.opacity(0.02)],
                             startPoint: .top, endPoint: .bottom
                         )
                     )
                     .interpolationMethod(.catmullRom)
-                    LineMark(
-                        x: .value("Day", item.0, unit: .day),
-                        y: .value("Balance", item.1)
-                    )
-                    .foregroundStyle(.blue)
-                    .lineStyle(StrokeStyle(lineWidth: 2))
-                    .interpolationMethod(.catmullRom)
                 }
+                .chartYScale(domain: yMin...yMax)
                 .chartYAxis {
-                    AxisMarks(position: .leading) { value in
+                    AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { value in
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [4]))
+                            .foregroundStyle(.gray.opacity(0.3))
                         AxisValueLabel {
                             if let v = value.as(Double.self) {
                                 Text(v.compactCurrency)
                                     .font(.caption2)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -369,11 +388,12 @@ struct CalendarView: View {
                 .chartXAxis {
                     AxisMarks(values: .stride(by: .day, count: 7)) { _ in
                         AxisValueLabel(format: .dateTime.day())
+                            .font(.caption2)
                     }
                 }
-                .frame(height: sizeClass == .regular ? 160 : 120)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 4)
+                .frame(height: sizeClass == .regular ? 160 : 140)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 8)
                 .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 12))
             }
         }
