@@ -4,7 +4,7 @@ import SwiftUI
 // MARK: - Timeline Provider
 
 struct BalanceTimelineProvider: TimelineProvider {
-    private let sharedDefaults = UserDefaults(suiteName: "group.com.yourname.balancehorizon")
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.ellasid.balancehorizon")
 
     func placeholder(in context: Context) -> BalanceEntry {
         BalanceEntry(date: Date(), balance: 1250, previousBalance: 1200)

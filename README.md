@@ -82,7 +82,7 @@ BalanceHorizon/
 
 ## Bundle ID
 
-`com.yourname.balancehorizon`
+`com.ellasid.balancehorizon`
 
 ## Privacy
 

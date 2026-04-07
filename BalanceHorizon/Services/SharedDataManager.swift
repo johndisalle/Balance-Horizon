@@ -6,7 +6,7 @@ import Foundation
 class SharedDataManager {
 
     static let shared = SharedDataManager()
-    static let suiteName = "group.com.yourname.balancehorizon"
+    static let suiteName = "group.com.ellasid.balancehorizon"
 
     private let defaults: UserDefaults
 

@@ -15,7 +15,7 @@ struct BalanceWidgetIntent: WidgetConfigurationIntent {
 // MARK: - Shared Data Keys
 
 private enum SharedDataKeys {
-    static let suiteName = "group.com.yourname.balancehorizon"
+    static let suiteName = "group.com.ellasid.balancehorizon"
     static let dailyBalancesKey = "cached_daily_balances"
     static let lastUpdatedKey = "balances_last_updated"
 }

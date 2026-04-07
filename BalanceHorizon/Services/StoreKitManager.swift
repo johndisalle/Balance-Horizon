@@ -11,9 +11,9 @@ typealias StoreTransaction = StoreKit.Transaction
 
 /// Product identifiers — configure these in App Store Connect
 enum ProductID {
-    static let monthlyPremium = "com.yourname.balancehorizon.premium.monthly"
-    static let yearlyPremium = "com.yourname.balancehorizon.premium.yearly"
-    static let lifetimePremium = "com.yourname.balancehorizon.premium.lifetime"
+    static let monthlyPremium = "com.ellasid.balancehorizon.premium.monthly"
+    static let yearlyPremium = "com.ellasid.balancehorizon.premium.yearly"
+    static let lifetimePremium = "com.ellasid.balancehorizon.premium.lifetime"
     static let allSubscriptions = [monthlyPremium, yearlyPremium]
     static let all = [monthlyPremium, yearlyPremium, lifetimePremium]
 }

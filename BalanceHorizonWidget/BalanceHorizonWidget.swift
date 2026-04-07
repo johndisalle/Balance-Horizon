@@ -114,7 +114,7 @@ struct ForecastGraphProvider: TimelineProvider {
 // MARK: - Shared Data Builder for Static Provider
 
 enum ForecastGraphDataBuilder {
-    private static let suiteName = "group.com.yourname.balancehorizon"
+    private static let suiteName = "group.com.ellasid.balancehorizon"
     private static let dailyBalancesKey = "cached_daily_balances"
 
     static func buildEntry() -> BalanceWidgetEntry {

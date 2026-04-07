@@ -5,7 +5,7 @@ struct WatchContentView: View {
     @State private var forecast: [(day: String, balance: Double)] = []
     @State private var showAddTransaction = false
 
-    private let sharedDefaults = UserDefaults(suiteName: "group.com.yourname.balancehorizon")
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.ellasid.balancehorizon")
 
     var body: some View {
         ScrollView {

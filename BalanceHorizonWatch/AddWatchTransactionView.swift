@@ -7,7 +7,7 @@ struct AddWatchTransactionView: View {
     @State private var isIncome: Bool = false
     @State private var selectedCategory: String = "General"
 
-    private let sharedDefaults = UserDefaults(suiteName: "group.com.yourname.balancehorizon")
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.ellasid.balancehorizon")
 
     private let categories = ["Groceries", "Dining", "Transport", "Shopping", "General"]
     private let amountRange: ClosedRange<Double> = 5...500
