@@ -1,6 +1,6 @@
 // StoreKitManager.swift — Balance Horizon
-// StoreKit 2 integration for premium subscriptions.
-// Handles product fetching, purchasing, and entitlement verification.
+// StoreKit 2 integration for premium subscriptions and lifetime purchase.
+// Supports monthly ($4.99), yearly ($29.99), and lifetime ($79.99) tiers.
 // Zero network calls for free tier — StoreKit only activates when user taps Premium.
 
 import Foundation
@@ -13,7 +13,9 @@ typealias StoreTransaction = StoreKit.Transaction
 enum ProductID {
     static let monthlyPremium = "com.yourname.balancehorizon.premium.monthly"
     static let yearlyPremium = "com.yourname.balancehorizon.premium.yearly"
-    static let all = [monthlyPremium, yearlyPremium]
+    static let lifetimePremium = "com.yourname.balancehorizon.premium.lifetime"
+    static let allSubscriptions = [monthlyPremium, yearlyPremium]
+    static let all = [monthlyPremium, yearlyPremium, lifetimePremium]
 }
 
 @Observable
@@ -21,6 +23,8 @@ final class StoreKitManager {
     var products: [Product] = []
     var purchasedProductIDs: Set<String> = []
     var isPremium: Bool = false
+    var currentTier: PremiumTier = .free
+    var isLoading: Bool = false
 
     private var updateListener: Task<Void, Error>?
 
@@ -32,6 +36,20 @@ final class StoreKitManager {
 
     deinit {
         updateListener?.cancel()
+    }
+
+    // MARK: - Product Access
+
+    var monthlyProduct: Product? {
+        products.first { $0.id == ProductID.monthlyPremium }
+    }
+
+    var yearlyProduct: Product? {
+        products.first { $0.id == ProductID.yearlyPremium }
+    }
+
+    var lifetimeProduct: Product? {
+        products.first { $0.id == ProductID.lifetimePremium }
     }
 
     // MARK: - Load Products
@@ -47,7 +65,10 @@ final class StoreKitManager {
 
     // MARK: - Purchase
 
-    func purchase(_ product: Product) async {
+    func purchase(_ product: Product) async -> Bool {
+        isLoading = true
+        defer { isLoading = false }
+
         do {
             let result = try await product.purchase()
             switch result {
@@ -55,19 +76,23 @@ final class StoreKitManager {
                 let transaction = try checkVerified(verification)
                 await transaction.finish()
                 await updatePurchasedProducts()
+                return true
             case .userCancelled, .pending:
-                break
+                return false
             @unknown default:
-                break
+                return false
             }
         } catch {
             print("Purchase failed: \(error)")
+            return false
         }
     }
 
     // MARK: - Restore
 
     func restorePurchases() async {
+        isLoading = true
+        defer { isLoading = false }
         try? await AppStore.sync()
         await updatePurchasedProducts()
     }
@@ -104,6 +129,15 @@ final class StoreKitManager {
         await MainActor.run {
             self.purchasedProductIDs = ids
             self.isPremium = !ids.isEmpty
+            if ids.contains(ProductID.lifetimePremium) {
+                self.currentTier = .lifetime
+            } else if ids.contains(ProductID.yearlyPremium) {
+                self.currentTier = .yearly
+            } else if ids.contains(ProductID.monthlyPremium) {
+                self.currentTier = .monthly
+            } else {
+                self.currentTier = .free
+            }
         }
     }
 

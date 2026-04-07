@@ -1,9 +1,18 @@
 // AppSettings.swift — Balance Horizon
-// Persists user preferences: starting balance, categories, onboarding state.
-// Uses SwiftData as a single-row settings store.
+// Persists user preferences: starting balance, categories, onboarding state,
+// notification preferences, and premium tier.
 
 import Foundation
 import SwiftData
+
+enum PremiumTier: String, Codable {
+    case free = "Free"
+    case monthly = "Monthly"
+    case yearly = "Yearly"
+    case lifetime = "Lifetime"
+
+    var isPremium: Bool { self != .free }
+}
 
 @Model
 final class AppSettings {
@@ -13,6 +22,12 @@ final class AppSettings {
     var hasCompletedOnboarding: Bool
     var categories: [String]
     var isPremium: Bool
+    var premiumTier: PremiumTier
+
+    // Notification preferences
+    var lowBalanceAlertsEnabled: Bool
+    var lowBalanceThreshold: Double
+    var dailyReminderEnabled: Bool
 
     init() {
         self.id = UUID()
@@ -21,6 +36,10 @@ final class AppSettings {
         self.hasCompletedOnboarding = false
         self.categories = Self.defaultCategories
         self.isPremium = false
+        self.premiumTier = .free
+        self.lowBalanceAlertsEnabled = true
+        self.lowBalanceThreshold = 100
+        self.dailyReminderEnabled = false
     }
 
     static let defaultCategories = [

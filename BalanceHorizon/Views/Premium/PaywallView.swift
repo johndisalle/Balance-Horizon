@@ -1,6 +1,6 @@
 // PaywallView.swift — Balance Horizon
-// Premium paywall with StoreKit 2 integration. Displays subscription tiers,
-// feature list, and restore purchases button.
+// Premium paywall with StoreKit 2. Three tiers: Monthly ($4.99), Yearly ($29.99),
+// Lifetime ($79.99). Shows feature list, animated header, and restore button.
 
 import SwiftUI
 import StoreKit
@@ -8,75 +8,18 @@ import StoreKit
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var storeManager = StoreKitManager()
+    @State private var selectedPlan: String? = ProductID.yearlyPremium
+    @State private var purchaseSuccess = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Header
-                    VStack(spacing: 12) {
-                        Image(systemName: "crown.fill")
-                            .font(.system(size: 56))
-                            .foregroundStyle(.yellow)
-                            .symbolEffect(.pulse)
-
-                        Text("Balance Horizon Premium")
-                            .font(.title.weight(.bold))
-
-                        Text("Unlock the full experience")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, 20)
-
-                    // Features
-                    VStack(alignment: .leading, spacing: 12) {
-                        FeatureRow(icon: "doc.text", title: "CSV Import & Export", description: "Move data in and out freely")
-                        FeatureRow(icon: "building.columns", title: "Multiple Accounts", description: "Track checking, savings, credit")
-                        FeatureRow(icon: "doc.richtext", title: "PDF Monthly Reports", description: "Beautiful printable summaries")
-                        FeatureRow(icon: "rectangle.3.group", title: "Home Screen Widgets", description: "7-day balance at a glance")
-                        FeatureRow(icon: "icloud", title: "iCloud Sync", description: "Sync across all your devices")
-                    }
-                    .padding(.horizontal)
-
-                    // Pricing
-                    VStack(spacing: 12) {
-                        ForEach(storeManager.products) { product in
-                            PricingCard(product: product) {
-                                Task { await storeManager.purchase(product) }
-                            }
-                        }
-
-                        // Fallback if products haven't loaded
-                        if storeManager.products.isEmpty {
-                            PricingCardPlaceholder(
-                                title: "Monthly",
-                                price: "$3.99/mo"
-                            )
-                            PricingCardPlaceholder(
-                                title: "Yearly",
-                                price: "$29.99/yr",
-                                badge: "Save 37%"
-                            )
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    // Restore
-                    Button("Restore Purchases") {
-                        Task { await storeManager.restorePurchases() }
-                    }
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .padding(.bottom, 8)
-
-                    // Legal
-                    Text("Payment will be charged to your Apple ID account. Subscription automatically renews unless turned off at least 24 hours before the end of the current period.")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 20)
+                    headerSection
+                    featuresSection
+                    pricingSection
+                    trialNote
+                    restoreAndLegal
                 }
             }
             .background(Color.secondaryBackground)
@@ -86,6 +29,176 @@ struct PaywallView: View {
                     Button("Close") { dismiss() }
                 }
             }
+            .overlay {
+                if purchaseSuccess {
+                    successOverlay
+                }
+            }
+        }
+    }
+
+    // MARK: - Header
+
+    private var headerSection: some View {
+        VStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(.yellow.opacity(0.15))
+                    .frame(width: 100, height: 100)
+                Image(systemName: "crown.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.yellow)
+                    .symbolEffect(.pulse)
+            }
+
+            Text("Go Premium")
+                .font(.largeTitle.weight(.bold))
+
+            Text("Unlock widgets, multi-account,\nexports, and more")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.top, 20)
+    }
+
+    // MARK: - Features
+
+    private var featuresSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            FeatureRow(icon: "rectangle.3.group.fill", title: "Home Screen Widgets", description: "7-day balance forecast at a glance")
+            FeatureRow(icon: "building.columns.fill", title: "Multiple Accounts", description: "Track checking, savings, and credit cards")
+            FeatureRow(icon: "doc.text.fill", title: "CSV Import & Export", description: "Move your data freely")
+            FeatureRow(icon: "doc.richtext.fill", title: "PDF Monthly Reports", description: "Beautiful printable summaries")
+            FeatureRow(icon: "chart.bar.fill", title: "Advanced Trends", description: "12+ month projections and insights")
+            FeatureRow(icon: "applewatch", title: "Apple Watch App", description: "Balance on your wrist")
+            FeatureRow(icon: "icloud.fill", title: "iCloud Sync", description: "Seamless across all your devices")
+        }
+        .padding(.horizontal, 20)
+    }
+
+    // MARK: - Pricing Cards
+
+    private var pricingSection: some View {
+        VStack(spacing: 10) {
+            // Yearly (recommended)
+            PricingTierCard(
+                title: "Yearly",
+                price: storeManager.yearlyProduct?.displayPrice ?? "$29.99",
+                subtitle: "per year",
+                badge: "Best Value — Save 50%",
+                isSelected: selectedPlan == ProductID.yearlyPremium,
+                isLoading: storeManager.isLoading
+            ) {
+                selectedPlan = ProductID.yearlyPremium
+            } onPurchase: {
+                await purchaseSelected()
+            }
+
+            // Monthly
+            PricingTierCard(
+                title: "Monthly",
+                price: storeManager.monthlyProduct?.displayPrice ?? "$4.99",
+                subtitle: "per month",
+                badge: nil,
+                isSelected: selectedPlan == ProductID.monthlyPremium,
+                isLoading: storeManager.isLoading
+            ) {
+                selectedPlan = ProductID.monthlyPremium
+            } onPurchase: {
+                await purchaseSelected()
+            }
+
+            // Lifetime
+            PricingTierCard(
+                title: "Lifetime",
+                price: storeManager.lifetimeProduct?.displayPrice ?? "$79.99",
+                subtitle: "one-time purchase",
+                badge: "Pay Once, Own Forever",
+                isSelected: selectedPlan == ProductID.lifetimePremium,
+                isLoading: storeManager.isLoading
+            ) {
+                selectedPlan = ProductID.lifetimePremium
+            } onPurchase: {
+                await purchaseSelected()
+            }
+
+            // Purchase button
+            Button {
+                Task { await purchaseSelected() }
+            } label: {
+                Group {
+                    if storeManager.isLoading {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Text("Continue")
+                            .font(.headline)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(.blue, in: RoundedRectangle(cornerRadius: 14))
+                .foregroundStyle(.white)
+            }
+            .disabled(storeManager.isLoading || selectedPlan == nil)
+            .padding(.top, 8)
+        }
+        .padding(.horizontal, 20)
+    }
+
+    private var trialNote: some View {
+        Text("Start with a 7-day free trial. Cancel anytime.")
+            .font(.footnote.weight(.medium))
+            .foregroundStyle(.secondary)
+    }
+
+    private var restoreAndLegal: some View {
+        VStack(spacing: 12) {
+            Button("Restore Purchases") {
+                Task { await storeManager.restorePurchases() }
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+
+            Text("Payment will be charged to your Apple ID account. Subscription automatically renews unless turned off at least 24 hours before the end of the current period. Lifetime purchase is non-refundable.")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
+        }
+    }
+
+    private var successOverlay: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 64))
+                .foregroundStyle(.green)
+            Text("Welcome to Premium!")
+                .font(.title2.weight(.bold))
+            Text("All features are now unlocked.")
+                .foregroundStyle(.secondary)
+            Button("Done") { dismiss() }
+                .font(.headline)
+                .padding(.horizontal, 32)
+                .padding(.vertical, 12)
+                .background(.blue, in: RoundedRectangle(cornerRadius: 12))
+                .foregroundStyle(.white)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.ultraThinMaterial)
+        .transition(.opacity)
+    }
+
+    private func purchaseSelected() async {
+        guard let plan = selectedPlan,
+              let product = storeManager.products.first(where: { $0.id == plan }) else { return }
+        let success = await storeManager.purchase(product)
+        if success {
+            withAnimation { purchaseSuccess = true }
+            let gen = UINotificationFeedbackGenerator()
+            gen.notificationOccurred(.success)
         }
     }
 }
@@ -111,60 +224,53 @@ struct FeatureRow: View {
     }
 }
 
-// MARK: - Pricing Card
+// MARK: - Pricing Tier Card
 
-struct PricingCard: View {
-    let product: Product
-    let action: () -> Void
+struct PricingTierCard: View {
+    let title: String
+    let price: String
+    let subtitle: String
+    let badge: String?
+    let isSelected: Bool
+    let isLoading: Bool
+    let onTap: () -> Void
+    let onPurchase: () async -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button(action: onTap) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(product.displayName)
-                        .font(.headline)
-                    Text(product.description)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(title)
+                            .font(.headline)
+                        if let badge {
+                            Text(badge)
+                                .font(.caption2.weight(.bold))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(.green, in: Capsule())
+                                .foregroundStyle(.white)
+                        }
+                    }
+                    Text(subtitle)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Text(product.displayPrice)
+                Text(price)
                     .font(.title3.weight(.bold))
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(isSelected ? .blue : .secondary)
             }
             .padding()
             .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(.blue, lineWidth: 1.5))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? .blue : .clear, lineWidth: 2)
+            )
         }
         .buttonStyle(.plain)
-    }
-}
-
-struct PricingCardPlaceholder: View {
-    let title: String
-    let price: String
-    var badge: String? = nil
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    Text(title).font(.headline)
-                    if let badge {
-                        Text(badge)
-                            .font(.caption2.weight(.bold))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(.green, in: Capsule())
-                            .foregroundStyle(.white)
-                    }
-                }
-            }
-            Spacer()
-            Text(price)
-                .font(.title3.weight(.bold))
-        }
-        .padding()
-        .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(.blue.opacity(0.5), lineWidth: 1))
     }
 }

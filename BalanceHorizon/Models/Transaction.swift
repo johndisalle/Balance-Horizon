@@ -50,6 +50,8 @@ final class Transaction {
     var recurringEndDate: Date?
     /// Links generated instances back to the parent recurring rule
     var recurringParentID: UUID?
+    /// Account this transaction belongs to (nil = default account)
+    var accountID: UUID?
     var createdAt: Date
 
     init(
@@ -61,7 +63,8 @@ final class Transaction {
         isRecurring: Bool = false,
         recurringFrequency: RecurringFrequency? = nil,
         recurringEndDate: Date? = nil,
-        recurringParentID: UUID? = nil
+        recurringParentID: UUID? = nil,
+        accountID: UUID? = nil
     ) {
         self.id = UUID()
         self.date = Calendar.current.startOfDay(for: date)
@@ -73,6 +76,7 @@ final class Transaction {
         self.recurringFrequency = recurringFrequency
         self.recurringEndDate = recurringEndDate
         self.recurringParentID = recurringParentID
+        self.accountID = accountID
         self.createdAt = .now
     }
 
