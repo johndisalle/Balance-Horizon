@@ -29,7 +29,7 @@ struct DayCell: View {
             }
 
             if !transactions.isEmpty {
-                CategoryIconsView(transactions: transactions, isToday: date.isToday)
+                CategoryIconsView(transactions: transactions)
             }
         }
         .frame(maxWidth: .infinity)

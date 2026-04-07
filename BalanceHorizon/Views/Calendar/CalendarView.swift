@@ -33,96 +33,89 @@ struct CalendarView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottomTrailing) {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        monthNavigationHeader
-                        BudgetGoalRingsBar(onShowGoals: { showGoals = true })
-                        widgetPromoBanner
-                        balanceChart
-                        calendarGrid
-                            .offset(x: dragOffset)
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom, 80)
+            mainContent
+                .navigationTitle("Balance Horizon")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar { toolbarItems }
+                .modifier(CalendarSheetsModifier(
+                    vm: $vm,
+                    showQuickAdd: $showQuickAdd,
+                    showPaywall: $showPaywall,
+                    showShareCard: $showShareCard,
+                    showGoals: $showGoals
+                ))
+                .overlay { radialMenuOverlay }
+                .celebrationOverlay(milestone: currentMilestone) {
+                    currentMilestone = nil
                 }
-                .background(Color.secondaryBackground)
-                .gesture(swipeGesture)
+                .onChange(of: transactions.count) {
+                    refreshProjections()
+                    checkMilestones()
+                }
+                .onChange(of: vm.currentMonth) { refreshProjections() }
+                .onChange(of: settings?.startingBalance) { refreshProjections() }
+                .onAppear {
+                    refreshProjections()
+                    checkMilestones()
+                }
+        }
+    }
 
-                addButtonStack
-            }
-            .navigationTitle("Balance Horizon")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showShareCard = true
-                    } label: {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.subheadline)
-                    }
+    private var mainContent: some View {
+        ZStack(alignment: .bottomTrailing) {
+            ScrollView {
+                VStack(spacing: 16) {
+                    monthNavigationHeader
+                    BudgetGoalRingsBar(onShowGoals: { showGoals = true })
+                    widgetPromoBanner
+                    balanceChart
+                    calendarGrid
+                        .offset(x: dragOffset)
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Today") {
-                        vm.goToToday()
-                        let gen = UIImpactFeedbackGenerator(style: .light)
-                        gen.impactOccurred()
-                    }
-                    .font(.subheadline.weight(.medium))
-                }
+                .padding(.horizontal)
+                .padding(.bottom, 80)
             }
-            .sheet(isPresented: $vm.showingDayDetail) {
-                DayDetailSheet(
-                    date: vm.selectedDay ?? .now,
-                    balance: vm.balanceForDay(vm.selectedDay ?? .now),
-                    transactions: vm.transactionsForDay(vm.selectedDay ?? .now)
+            .background(Color.secondaryBackground)
+            .gesture(swipeGesture)
+
+            addButtonStack
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button {
+                showShareCard = true
+            } label: {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.subheadline)
+            }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Today") {
+                vm.goToToday()
+                let gen = UIImpactFeedbackGenerator(style: .light)
+                gen.impactOccurred()
+            }
+            .font(.subheadline.weight(.medium))
+        }
+    }
+
+    @ViewBuilder
+    private var radialMenuOverlay: some View {
+        if showRadialMenu {
+            RadialQuickAddMenu(
+                isPresented: $showRadialMenu,
+                selectedDate: radialMenuDate
+            ) { category, amount in
+                let tx = Transaction(
+                    date: radialMenuDate,
+                    amount: amount,
+                    type: .expense,
+                    category: category
                 )
-                .presentationDetents([.medium, .large])
-            }
-            .sheet(isPresented: $vm.showingAddTransaction) {
-                AddTransactionView(preselectedDate: vm.selectedDay)
-            }
-            .sheet(isPresented: $showQuickAdd) {
-                QuickAddView()
-                    .presentationDetents([.medium])
-            }
-            .sheet(isPresented: $showPaywall) {
-                PaywallView()
-            }
-            .sheet(isPresented: $showShareCard) {
-                ShareMonthCardView()
-            }
-            .sheet(isPresented: $showGoals) {
-                BudgetGoalsView()
-            }
-            .overlay {
-                if showRadialMenu {
-                    RadialQuickAddMenu(
-                        isPresented: $showRadialMenu,
-                        selectedDate: radialMenuDate
-                    ) { category, amount in
-                        let tx = Transaction(
-                            date: radialMenuDate,
-                            amount: amount,
-                            type: .expense,
-                            category: category
-                        )
-                        context.insert(tx)
-                    }
-                }
-            }
-            .celebrationOverlay(milestone: currentMilestone) {
-                currentMilestone = nil
-            }
-            .onChange(of: transactions.count) {
-                refreshProjections()
-                checkMilestones()
-            }
-            .onChange(of: vm.currentMonth) { refreshProjections() }
-            .onChange(of: settings?.startingBalance) { refreshProjections() }
-            .onAppear {
-                refreshProjections()
-                checkMilestones()
+                context.insert(tx)
             }
         }
     }
@@ -154,6 +147,7 @@ struct CalendarView: View {
             transactionCount: transactions.count,
             daysSinceStart: daysSinceStart,
             currentBalance: todayBalance,
+            startingBalance: settings.startingBalance,
             savingsRate: savingsRate
         ) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -399,5 +393,43 @@ struct CalendarView: View {
         }
         .padding(.trailing, 20)
         .padding(.bottom, 20)
+    }
+}
+
+// MARK: - Sheets Modifier (extracted to reduce body complexity)
+
+private struct CalendarSheetsModifier: ViewModifier {
+    @Binding var vm: CalendarViewModel
+    @Binding var showQuickAdd: Bool
+    @Binding var showPaywall: Bool
+    @Binding var showShareCard: Bool
+    @Binding var showGoals: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(isPresented: $vm.showingDayDetail) {
+                DayDetailSheet(
+                    date: vm.selectedDay ?? .now,
+                    balance: vm.balanceForDay(vm.selectedDay ?? .now),
+                    transactions: vm.transactionsForDay(vm.selectedDay ?? .now)
+                )
+                .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $vm.showingAddTransaction) {
+                AddTransactionView(preselectedDate: vm.selectedDay)
+            }
+            .sheet(isPresented: $showQuickAdd) {
+                QuickAddView()
+                    .presentationDetents([.medium])
+            }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView()
+            }
+            .sheet(isPresented: $showShareCard) {
+                ShareMonthCardView()
+            }
+            .sheet(isPresented: $showGoals) {
+                BudgetGoalsView()
+            }
     }
 }
