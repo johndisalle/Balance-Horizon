@@ -40,7 +40,7 @@ struct AddWatchTransactionView: View {
                     Text("Expense").tag(false)
                     Text("Income").tag(true)
                 }
-                .pickerStyle(.segmented)
+                .pickerStyle(.wheel)
 
                 // MARK: - Quick Category Picker
                 Picker("Category", selection: $selectedCategory) {
