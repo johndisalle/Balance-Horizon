@@ -173,11 +173,12 @@ private func shortCurrency(_ value: Double) -> String {
     }
 }
 
-// MARK: - Widget Bundle Entry Point
-
-@main
-struct BalanceHorizonWidgetBundle: WidgetBundle {
-    var body: some Widget {
-        BalanceComplicationWidget()
-    }
-}
+// NOTE: To use complications, create a separate watchOS Widget Extension target
+// and use this as the @main entry point in that target:
+//
+// @main
+// struct BalanceHorizonWidgetBundle: WidgetBundle {
+//     var body: some Widget {
+//         BalanceComplicationWidget()
+//     }
+// }
