@@ -1,0 +1,430 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA000001 /* BalanceHorizonApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001; };
+		AA000002 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002; };
+		AA000003 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003; };
+		AA000004 /* CalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004; };
+		AA000005 /* ProjectionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005; };
+		AA000006 /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006; };
+		AA000007 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007; };
+		AA000008 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008; };
+		AA000009 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009; };
+		AA000010 /* DayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010; };
+		AA000011 /* DayDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011; };
+		AA000012 /* AddTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012; };
+		AA000013 /* TransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013; };
+		AA000014 /* RecurringListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014; };
+		AA000015 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015; };
+		AA000016 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016; };
+		AA000017 /* CategoryEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017; };
+		AA000018 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018; };
+		AA000019 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000019; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AB000000 /* BalanceHorizon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BalanceHorizon.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB000001 /* BalanceHorizonApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceHorizonApp.swift; sourceTree = "<group>"; };
+		AB000002 /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
+		AB000003 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		AB000004 /* CalendarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewModel.swift; sourceTree = "<group>"; };
+		AB000005 /* ProjectionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectionEngine.swift; sourceTree = "<group>"; };
+		AB000006 /* StoreKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitManager.swift; sourceTree = "<group>"; };
+		AB000007 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		AB000008 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		AB000009 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		AB000010 /* DayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCell.swift; sourceTree = "<group>"; };
+		AB000011 /* DayDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailSheet.swift; sourceTree = "<group>"; };
+		AB000012 /* AddTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTransactionView.swift; sourceTree = "<group>"; };
+		AB000013 /* TransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListView.swift; sourceTree = "<group>"; };
+		AB000014 /* RecurringListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringListView.swift; sourceTree = "<group>"; };
+		AB000015 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		AB000016 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AB000017 /* CategoryEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditorView.swift; sourceTree = "<group>"; };
+		AB000018 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		AB000019 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AC000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AD000000 = {
+			isa = PBXGroup;
+			children = (
+				AD000001 /* BalanceHorizon */,
+				AD000099 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AD000099 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AB000000 /* BalanceHorizon.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AD000001 /* BalanceHorizon */ = {
+			isa = PBXGroup;
+			children = (
+				AB000001 /* BalanceHorizonApp.swift */,
+				AD000002 /* Models */,
+				AD000003 /* ViewModels */,
+				AD000004 /* Views */,
+				AD000005 /* Services */,
+				AD000006 /* Extensions */,
+				AB000019 /* Assets.xcassets */,
+			);
+			path = BalanceHorizon;
+			sourceTree = "<group>";
+		};
+		AD000002 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AB000002 /* Transaction.swift */,
+				AB000003 /* AppSettings.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AD000003 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				AB000004 /* CalendarViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		AD000004 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AB000008 /* MainTabView.swift */,
+				AD000007 /* Calendar */,
+				AD000008 /* Transactions */,
+				AD000009 /* Recurring */,
+				AD000010 /* Onboarding */,
+				AD000011 /* Settings */,
+				AD000012 /* Premium */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AD000005 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AB000005 /* ProjectionEngine.swift */,
+				AB000006 /* StoreKitManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AD000006 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				AB000007 /* Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		AD000007 /* Calendar */ = {
+			isa = PBXGroup;
+			children = (
+				AB000009 /* CalendarView.swift */,
+				AB000010 /* DayCell.swift */,
+				AB000011 /* DayDetailSheet.swift */,
+			);
+			path = Calendar;
+			sourceTree = "<group>";
+		};
+		AD000008 /* Transactions */ = {
+			isa = PBXGroup;
+			children = (
+				AB000012 /* AddTransactionView.swift */,
+				AB000013 /* TransactionListView.swift */,
+			);
+			path = Transactions;
+			sourceTree = "<group>";
+		};
+		AD000009 /* Recurring */ = {
+			isa = PBXGroup;
+			children = (
+				AB000014 /* RecurringListView.swift */,
+			);
+			path = Recurring;
+			sourceTree = "<group>";
+		};
+		AD000010 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				AB000015 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		AD000011 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				AB000016 /* SettingsView.swift */,
+				AB000017 /* CategoryEditorView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		AD000012 /* Premium */ = {
+			isa = PBXGroup;
+			children = (
+				AB000018 /* PaywallView.swift */,
+			);
+			path = Premium;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AE000001 /* BalanceHorizon */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AF000003;
+			buildPhases = (
+				AC000002 /* Sources */,
+				AC000001 /* Frameworks */,
+				AC000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BalanceHorizon;
+			productName = BalanceHorizon;
+			productReference = AB000000 /* BalanceHorizon.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AE000000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					AE000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = AF000001;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AD000000;
+			productRefGroup = AD000099 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AE000001 /* BalanceHorizon */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AC000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000019 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AC000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001 /* BalanceHorizonApp.swift in Sources */,
+				AA000002 /* Transaction.swift in Sources */,
+				AA000003 /* AppSettings.swift in Sources */,
+				AA000004 /* CalendarViewModel.swift in Sources */,
+				AA000005 /* ProjectionEngine.swift in Sources */,
+				AA000006 /* StoreKitManager.swift in Sources */,
+				AA000007 /* Extensions.swift in Sources */,
+				AA000008 /* MainTabView.swift in Sources */,
+				AA000009 /* CalendarView.swift in Sources */,
+				AA000010 /* DayCell.swift in Sources */,
+				AA000011 /* DayDetailSheet.swift in Sources */,
+				AA000012 /* AddTransactionView.swift in Sources */,
+				AA000013 /* TransactionListView.swift in Sources */,
+				AA000014 /* RecurringListView.swift in Sources */,
+				AA000015 /* OnboardingView.swift in Sources */,
+				AA000016 /* SettingsView.swift in Sources */,
+				AA000017 /* CategoryEditorView.swift in Sources */,
+				AA000018 /* PaywallView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AF000010 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AF000011 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AF000020 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Balance Horizon";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.balancehorizon;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AF000021 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Balance Horizon";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.balancehorizon;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AF000001 /* Build configuration list for PBXProject */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF000010 /* Debug */,
+				AF000011 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AF000003 /* Build configuration list for PBXNativeTarget */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF000020 /* Debug */,
+				AF000021 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = AE000000 /* Project object */;
+}
