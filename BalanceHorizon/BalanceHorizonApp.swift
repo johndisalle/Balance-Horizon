@@ -1,5 +1,5 @@
 // BalanceHorizonApp.swift — Balance Horizon
-// App entry point. Configures SwiftData model container, registers notifications,
+// App entry point. Configures SwiftData, schedules morning balance notifications,
 // syncs shared data for widgets/watch, and routes between onboarding and main app.
 
 import SwiftUI
@@ -24,6 +24,7 @@ struct ContentRootView: View {
     @Query(sort: \Transaction.date) private var transactions: [Transaction]
     @Environment(\.modelContext) private var context
     @Environment(NotificationManager.self) private var notificationManager
+    @State private var showPaywall = false
 
     private var settings: AppSettings {
         if let existing = settingsArray.first { return existing }
@@ -40,12 +41,57 @@ struct ContentRootView: View {
                 OnboardingView()
             }
         }
-        .onAppear { syncSharedData() }
-        .onChange(of: transactions.count) { syncSharedData() }
+        .onAppear {
+            syncSharedData()
+            checkPaywallTrigger()
+        }
+        .onChange(of: transactions.count) {
+            syncSharedData()
+            settings.transactionCount = transactions.count
+            checkPaywallTrigger()
+        }
         .task { await setupNotifications() }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
     }
 
-    /// Write balances to shared UserDefaults so widgets and watch can read them
+    // MARK: - Notifications
+
+    private func setupNotifications() async {
+        guard settings.hasCompletedOnboarding else { return }
+        await notificationManager.requestPermission()
+
+        // Schedule morning balance notification (the #1 retention driver)
+        let engine = ProjectionEngine()
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: .now)
+        let future = cal.date(byAdding: .month, value: 12, to: today)!
+
+        let balances = engine.computeBalances(
+            transactions: transactions,
+            startingBalance: settings.startingBalance,
+            startingDate: settings.startingBalanceDate,
+            from: today,
+            to: future
+        )
+
+        if let todayBalance = balances[today]?.balance {
+            await notificationManager.scheduleMorningBalance(balance: todayBalance)
+        }
+
+        // Schedule low-balance warnings if enabled
+        if settings.lowBalanceAlertsEnabled {
+            let balanceMap = balances.mapValues { $0.balance }
+            await notificationManager.scheduleLowBalanceWarnings(
+                dayBalances: balanceMap,
+                threshold: settings.lowBalanceThreshold
+            )
+        }
+    }
+
+    // MARK: - Shared Data Sync
+
     private func syncSharedData() {
         let engine = ProjectionEngine()
         let cal = Calendar.current
@@ -66,7 +112,6 @@ struct ContentRootView: View {
             SharedDataManager.shared.writeTodayBalance(todayBal)
         }
 
-        // Process any pending transactions from Apple Watch
         importWatchTransactions()
     }
 
@@ -88,27 +133,33 @@ struct ContentRootView: View {
         }
     }
 
-    private func setupNotifications() async {
-        guard settings.lowBalanceAlertsEnabled else { return }
-        await notificationManager.requestPermission()
+    // MARK: - Smart Paywall Trigger
 
-        let engine = ProjectionEngine()
-        let cal = Calendar.current
-        let today = cal.startOfDay(for: .now)
-        let future = cal.date(byAdding: .month, value: 1, to: today)!
+    /// Show paywall at the right moment:
+    /// - After 3 days of use, OR
+    /// - After adding 5+ transactions (high engagement = high conversion)
+    /// Only if user hasn't seen it yet and isn't already premium
+    private func checkPaywallTrigger() {
+        guard settings.hasCompletedOnboarding,
+              !settings.isPremium,
+              !settings.hasSeenPaywall else { return }
 
-        let balances = engine.computeBalances(
-            transactions: transactions,
-            startingBalance: settings.startingBalance,
-            startingDate: settings.startingBalanceDate,
-            from: today,
-            to: future
-        )
+        let daysSinceFirstLaunch: Int
+        if let firstLaunch = settings.firstLaunchDate {
+            daysSinceFirstLaunch = Calendar.current.dateComponents(
+                [.day], from: firstLaunch, to: .now
+            ).day ?? 0
+        } else {
+            daysSinceFirstLaunch = 0
+        }
 
-        let balanceMap = balances.mapValues { $0.balance }
-        await notificationManager.scheduleLowBalanceWarnings(
-            dayBalances: balanceMap,
-            threshold: settings.lowBalanceThreshold
-        )
+        // Trigger after 3 days OR after 5 manually-added transactions
+        if daysSinceFirstLaunch >= 3 || settings.transactionCount >= 5 {
+            // Small delay so it doesn't feel jarring
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                settings.hasSeenPaywall = true
+                showPaywall = true
+            }
+        }
     }
 }

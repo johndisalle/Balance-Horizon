@@ -13,7 +13,9 @@ struct CalendarView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var vm = CalendarViewModel()
     @State private var showQuickAdd = false
+    @State private var showPaywall = false
     @State private var dragOffset: CGFloat = 0
+    @State private var dismissedWidgetPromo = false
 
     private var settings: AppSettings? { settingsArray.first }
 
@@ -29,6 +31,7 @@ struct CalendarView: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         monthNavigationHeader
+                        widgetPromoBanner
                         balanceChart
                         calendarGrid
                             .offset(x: dragOffset)
@@ -68,6 +71,9 @@ struct CalendarView: View {
                 QuickAddView()
                     .presentationDetents([.medium])
             }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView()
+            }
             .onChange(of: transactions.count) { refreshProjections() }
             .onChange(of: vm.currentMonth) { refreshProjections() }
             .onChange(of: settings?.startingBalance) { refreshProjections() }
@@ -77,6 +83,48 @@ struct CalendarView: View {
 
     private func refreshProjections() {
         vm.refreshProjections(transactions: transactions, settings: settings)
+    }
+
+    // MARK: - Widget Promo Banner (Paywall Trigger)
+
+    @ViewBuilder
+    private var widgetPromoBanner: some View {
+        if settings?.isPremium != true && !dismissedWidgetPromo {
+            Button {
+                let gen = UIImpactFeedbackGenerator(style: .medium)
+                gen.impactOccurred()
+                showPaywall = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "rectangle.3.group.fill")
+                        .font(.title3)
+                        .foregroundStyle(.blue)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("See your balance on your Home Screen")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                        Text("Unlock widgets with Pro")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Text("PRO")
+                        .font(.caption.weight(.bold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.blue, in: Capsule())
+                        .foregroundStyle(.white)
+                }
+                .padding(12)
+                .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(.blue.opacity(0.2), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .swipeActions {
+                Button("Dismiss") { withAnimation { dismissedWidgetPromo = true } }
+            }
+        }
     }
 
     // MARK: - Swipe Gesture for Month Navigation

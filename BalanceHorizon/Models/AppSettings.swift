@@ -29,6 +29,11 @@ final class AppSettings {
     var lowBalanceThreshold: Double
     var dailyReminderEnabled: Bool
 
+    // Paywall timing
+    var firstLaunchDate: Date?
+    var transactionCount: Int
+    var hasSeenPaywall: Bool
+
     init() {
         self.id = UUID()
         self.startingBalance = 0
@@ -40,6 +45,9 @@ final class AppSettings {
         self.lowBalanceAlertsEnabled = true
         self.lowBalanceThreshold = 100
         self.dailyReminderEnabled = false
+        self.firstLaunchDate = nil
+        self.transactionCount = 0
+        self.hasSeenPaywall = false
     }
 
     static let defaultCategories = [
