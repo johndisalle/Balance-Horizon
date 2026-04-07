@@ -14,6 +14,7 @@ struct SettingsView: View {
     @State private var showingCategoryEditor = false
     @State private var showingPaywall = false
     @State private var showingAccountEditor = false
+    @State private var showingThemePicker = false
     @State private var editingBalance: String = ""
     @State private var showBalanceEditor = false
     @State private var showShareSheet = false
@@ -27,7 +28,9 @@ struct SettingsView: View {
                 balanceSection
                 accountsSection
                 categoriesSection
+                appearanceSection
                 notificationsSection
+                moreSection
                 premiumSection
                 dataSection
                 aboutSection
@@ -41,6 +44,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingAccountEditor) {
                 AccountEditorView()
+            }
+            .sheet(isPresented: $showingThemePicker) {
+                ThemePickerView()
             }
             .sheet(isPresented: $showShareSheet) {
                 if let url = exportFileURL {
@@ -137,6 +143,46 @@ struct SettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+            }
+        }
+    }
+
+    private var appearanceSection: some View {
+        Section("Appearance") {
+            Button {
+                showingThemePicker = true
+            } label: {
+                HStack {
+                    Label("Theme & App Icon", systemImage: "paintbrush")
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    if settings?.isPremium != true {
+                        Text("PRO")
+                            .font(.caption2.weight(.bold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.blue, in: Capsule())
+                            .foregroundStyle(.white)
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private var moreSection: some View {
+        Section("More") {
+            NavigationLink {
+                RecurringListView()
+            } label: {
+                Label("Recurring Transactions", systemImage: "repeat")
+            }
+            NavigationLink {
+                TrendsView()
+            } label: {
+                Label("Spending Trends", systemImage: "chart.bar.fill")
             }
         }
     }

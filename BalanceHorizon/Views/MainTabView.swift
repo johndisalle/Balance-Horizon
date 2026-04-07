@@ -1,5 +1,7 @@
 // MainTabView.swift — Balance Horizon
-// Primary navigation: tab bar with Calendar, Transactions, Trends, Recurring, and Settings.
+// Primary navigation with 5 tabs: Calendar, Insights, What If, Transactions, Settings.
+// Insights and What If replace the old Trends/Recurring tabs as primary navigation,
+// with Trends and Recurring accessible from within those screens or Settings.
 
 import SwiftUI
 
@@ -15,21 +17,21 @@ struct MainTabView: View {
                 }
                 .tag(0)
 
-            TransactionListView()
+            InsightsView()
                 .tabItem {
-                    Label("Transactions", systemImage: "list.bullet.rectangle")
+                    Label("Insights", systemImage: "sparkles")
                 }
                 .tag(1)
 
-            TrendsView()
+            WhatIfSimulatorView()
                 .tabItem {
-                    Label("Trends", systemImage: "chart.bar.fill")
+                    Label("What If", systemImage: "questionmark.circle")
                 }
                 .tag(2)
 
-            RecurringListView()
+            TransactionListView()
                 .tabItem {
-                    Label("Recurring", systemImage: "repeat")
+                    Label("Transactions", systemImage: "list.bullet.rectangle")
                 }
                 .tag(3)
 
@@ -41,12 +43,15 @@ struct MainTabView: View {
         }
         .tint(.blue)
         .onOpenURL { url in
-            // Handle deep links from widgets
             if url.scheme == "balancehorizon" {
                 if url.host == "quickadd" {
                     showQuickAdd = true
                 } else if url.host == "today" {
                     selectedTab = 0
+                } else if url.host == "insights" {
+                    selectedTab = 1
+                } else if url.host == "whatif" {
+                    selectedTab = 2
                 }
             }
         }

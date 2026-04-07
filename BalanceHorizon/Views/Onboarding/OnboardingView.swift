@@ -12,6 +12,7 @@ struct OnboardingView: View {
     @State private var currentPage = 0
     @State private var startingBalance: String = ""
     @State private var showPreview = false
+    @State private var showBillQuickAdd = false
 
     private var settings: AppSettings {
         if let existing = settingsArray.first { return existing }
@@ -26,7 +27,8 @@ struct OnboardingView: View {
                 welcomePage.tag(0)
                 conceptPage.tag(1)
                 balancePage.tag(2)
-                previewPage.tag(3)
+                billsPage.tag(3)
+                previewPage.tag(4)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
             .animation(.easeInOut, value: currentPage)
@@ -35,7 +37,10 @@ struct OnboardingView: View {
             Button {
                 let gen = UIImpactFeedbackGenerator(style: .medium)
                 gen.impactOccurred()
-                if currentPage < 3 {
+                if currentPage == 3 {
+                    // Bills page — show the bill quick-add sheet
+                    showBillQuickAdd = true
+                } else if currentPage < 4 {
                     withAnimation { currentPage += 1 }
                 } else {
                     completeOnboarding()
@@ -51,6 +56,12 @@ struct OnboardingView: View {
             .disabled(!buttonEnabled)
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
+            .sheet(isPresented: $showBillQuickAdd) {
+                BillQuickAddView {
+                    showBillQuickAdd = false
+                    withAnimation { currentPage = 4 }
+                }
+            }
         }
         .background(Color.secondaryBackground)
     }
@@ -58,8 +69,9 @@ struct OnboardingView: View {
     private var buttonTitle: String {
         switch currentPage {
         case 0, 1: return "Next"
-        case 2: return "See My Future Balance"
-        case 3: return "Start Using Balance Horizon"
+        case 2: return "Next"
+        case 3: return "Add My Bills"
+        case 4: return "Start Using Balance Horizon"
         default: return "Next"
         }
     }
@@ -173,7 +185,44 @@ struct OnboardingView: View {
         .padding()
     }
 
-    // MARK: - Page 4: Live Preview
+    // MARK: - Page 4: Bills
+
+    private var billsPage: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            ZStack {
+                Circle()
+                    .fill(.purple.opacity(0.1))
+                    .frame(width: 140, height: 140)
+                Image(systemName: "doc.text.fill")
+                    .font(.system(size: 64))
+                    .foregroundStyle(.purple)
+            }
+
+            Text("Add Your Bills")
+                .font(.title.weight(.bold))
+
+            Text("Quickly add your recurring bills and subscriptions.\nThis is what makes your projections accurate.")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+
+            // Show some example pills
+            HStack(spacing: 8) {
+                BillPill(name: "Netflix", icon: "play.tv")
+                BillPill(name: "Rent", icon: "house")
+                BillPill(name: "Gym", icon: "figure.run")
+                BillPill(name: "+12 more", icon: "plus")
+            }
+
+            Spacer()
+        }
+        .padding()
+    }
+
+    // MARK: - Page 5: Live Preview
 
     private var previewPage: some View {
         VStack(spacing: 16) {
@@ -288,10 +337,10 @@ struct OnboardingView: View {
         settings.hasCompletedOnboarding = true
         settings.firstLaunchDate = Date.now
 
-        // Pre-populate sample recurring transactions so the calendar is alive
-        createSampleTransactions()
+        // Add a default salary if user didn't add one via bills
+        addDefaultSalaryIfNeeded()
 
-        // Request notification permission
+        // Request notification permission and schedule morning balance
         Task {
             let notifManager = NotificationManager()
             await notifManager.requestPermission()
@@ -302,59 +351,26 @@ struct OnboardingView: View {
         generator.notificationOccurred(.success)
     }
 
-    private func createSampleTransactions() {
-        let cal = Calendar.current
-        let firstOfMonth = cal.date(from: cal.dateComponents([.year, .month], from: .now))!
+    private func addDefaultSalaryIfNeeded() {
+        // Check if user already added income via bill quick-add
+        let descriptor = FetchDescriptor<Transaction>()
+        let existing = (try? context.fetch(descriptor)) ?? []
+        let hasIncome = existing.contains { $0.type == .income }
 
-        // Monthly salary on the 1st
-        let salary = Transaction(
-            date: firstOfMonth,
-            amount: 3000,
-            type: .income,
-            desc: "Monthly Salary",
-            category: "Salary",
-            isRecurring: true,
-            recurringFrequency: .monthly
-        )
-        context.insert(salary)
-
-        // Monthly rent on the 1st
-        let rent = Transaction(
-            date: firstOfMonth,
-            amount: 1200,
-            type: .expense,
-            desc: "Rent",
-            category: "Rent",
-            isRecurring: true,
-            recurringFrequency: .monthly
-        )
-        context.insert(rent)
-
-        // Weekly groceries on Monday
-        let nextMonday = cal.nextDate(after: .now, matching: DateComponents(weekday: 2), matchingPolicy: .nextTime)!
-        let groceries = Transaction(
-            date: nextMonday,
-            amount: 150,
-            type: .expense,
-            desc: "Weekly Groceries",
-            category: "Groceries",
-            isRecurring: true,
-            recurringFrequency: .weekly
-        )
-        context.insert(groceries)
-
-        // Monthly utilities
-        let fifteenth = cal.date(bySetting: .day, value: 15, of: firstOfMonth)!
-        let utilities = Transaction(
-            date: fifteenth,
-            amount: 120,
-            type: .expense,
-            desc: "Utilities",
-            category: "Utilities",
-            isRecurring: true,
-            recurringFrequency: .monthly
-        )
-        context.insert(utilities)
+        if !hasIncome {
+            let cal = Calendar.current
+            let firstOfMonth = cal.date(from: cal.dateComponents([.year, .month], from: .now))!
+            let salary = Transaction(
+                date: firstOfMonth,
+                amount: 3000,
+                type: .income,
+                desc: "Monthly Salary",
+                category: "Salary",
+                isRecurring: true,
+                recurringFrequency: .monthly
+            )
+            context.insert(salary)
+        }
     }
 }
 
@@ -395,5 +411,23 @@ private struct SampleRow: View {
                 .font(.caption.weight(.semibold).monospacedDigit())
                 .foregroundStyle(color)
         }
+    }
+}
+
+private struct BillPill: View {
+    let name: String
+    let icon: String
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption2)
+            Text(name)
+                .font(.caption2.weight(.medium))
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.blue.opacity(0.1), in: Capsule())
+        .foregroundStyle(.blue)
     }
 }
