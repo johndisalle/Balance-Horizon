@@ -106,7 +106,7 @@ struct ContentRootView: View {
         )
 
         let balanceMap = balances.mapValues { $0.balance }
-        notificationManager.scheduleLowBalanceWarnings(
+        await notificationManager.scheduleLowBalanceWarnings(
             dayBalances: balanceMap,
             threshold: settings.lowBalanceThreshold
         )
