@@ -23,25 +23,44 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TabView(selection: $currentPage) {
-                welcomePage.tag(0)
-                conceptPage.tag(1)
-                balancePage.tag(2)
-                billsPage.tag(3)
-                previewPage.tag(4)
+            // Use a simple conditional instead of TabView to avoid page sync bugs
+            Group {
+                switch currentPage {
+                case 0: welcomePage
+                case 1: conceptPage
+                case 2: balancePage
+                case 3: billsPage
+                case 4: previewPage
+                default: welcomePage
+                }
             }
-            .tabViewStyle(.page(indexDisplayMode: .always))
-            .animation(.easeInOut, value: currentPage)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .transition(.asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            ))
+            .animation(.easeInOut(duration: 0.35), value: currentPage)
+
+            // Page indicator dots
+            HStack(spacing: 8) {
+                ForEach(0..<5) { i in
+                    Circle()
+                        .fill(i == currentPage ? .blue : .gray.opacity(0.3))
+                        .frame(width: 8, height: 8)
+                        .scaleEffect(i == currentPage ? 1.2 : 1.0)
+                        .animation(.spring(response: 0.3), value: currentPage)
+                }
+            }
+            .padding(.bottom, 16)
 
             // Bottom button
             Button {
                 let gen = UIImpactFeedbackGenerator(style: .medium)
                 gen.impactOccurred()
                 if currentPage == 3 {
-                    // Bills page — show the bill quick-add sheet
                     showBillQuickAdd = true
                 } else if currentPage < 4 {
-                    withAnimation { currentPage += 1 }
+                    currentPage += 1
                 } else {
                     completeOnboarding()
                 }
@@ -57,9 +76,7 @@ struct OnboardingView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
             .sheet(isPresented: $showBillQuickAdd, onDismiss: {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    currentPage = 4
-                }
+                currentPage = 4
             }) {
                 BillQuickAddView {
                     showBillQuickAdd = false
