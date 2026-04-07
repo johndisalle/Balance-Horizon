@@ -4,12 +4,16 @@
 
 import SwiftUI
 import SwiftData
+import StoreKit
 
 struct SettingsView: View {
     @Query private var settingsArray: [AppSettings]
     @Query(sort: \Transaction.date) private var transactions: [Transaction]
     @Query private var accounts: [Account]
     @Environment(\.modelContext) private var context
+    @Environment(\.requestReview) private var requestReview
+
+    @AppStorage("appearanceMode") private var appearanceMode: Int = 0
 
     @State private var showingCategoryEditor = false
     @State private var showingPaywall = false
@@ -23,6 +27,14 @@ struct SettingsView: View {
 
     private var settings: AppSettings? { settingsArray.first }
 
+    private var colorScheme: ColorScheme? {
+        switch appearanceMode {
+        case 1: return .light
+        case 2: return .dark
+        default: return nil
+        }
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -30,6 +42,7 @@ struct SettingsView: View {
                 autoImportSection
                 accountsSection
                 categoriesSection
+                displaySection
                 appearanceSection
                 notificationsSection
                 moreSection
@@ -38,6 +51,7 @@ struct SettingsView: View {
                 aboutSection
             }
             .navigationTitle("Settings")
+            .preferredColorScheme(colorScheme)
             .sheet(isPresented: $showingCategoryEditor) {
                 CategoryEditorView()
             }
@@ -165,6 +179,18 @@ struct SettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+            }
+        }
+    }
+
+    private var displaySection: some View {
+        Section("Display") {
+            Picker(selection: $appearanceMode) {
+                Text("System").tag(0)
+                Text("Light").tag(1)
+                Text("Dark").tag(2)
+            } label: {
+                Label("Appearance", systemImage: "circle.lefthalf.filled")
             }
         }
     }
@@ -304,6 +330,46 @@ struct SettingsView: View {
                 Text("100% Offline")
                     .foregroundStyle(.green)
                     .font(.body.weight(.medium))
+            }
+
+            Button {
+                requestReview()
+            } label: {
+                Label("Rate Balance Horizon", systemImage: "star")
+                    .foregroundStyle(.primary)
+            }
+
+            Link(destination: URL(string: "https://johndisalle.github.io/Balance-Horizon/privacy-policy")!) {
+                HStack {
+                    Label("Privacy Policy", systemImage: "hand.raised")
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Link(destination: URL(string: "https://johndisalle.github.io/Balance-Horizon/terms-of-service")!) {
+                HStack {
+                    Label("Terms of Service", systemImage: "doc.plaintext")
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Link(destination: URL(string: "https://johndisalle.github.io/Balance-Horizon/support")!) {
+                HStack {
+                    Label("Help & Support", systemImage: "questionmark.circle")
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
     }
