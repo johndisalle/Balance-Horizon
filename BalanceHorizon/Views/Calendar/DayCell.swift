@@ -1,6 +1,6 @@
 // DayCell.swift — Balance Horizon
-// Individual day cell in the calendar grid. Color-coded balance display with
-// spring animations on appear and press feedback.
+// Individual day cell showing date, projected balance, and smart category icons.
+// Features spring animations, press feedback, and long-press for radial quick-add.
 
 import SwiftUI
 
@@ -8,13 +8,13 @@ struct DayCell: View {
     let date: Date
     let balance: Double?
     let balanceColor: Color
-    let hasTransactions: Bool
+    let transactions: [Transaction]
 
     @State private var isPressed = false
     @State private var hasAppeared = false
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 1) {
             Text(date.dayNumber)
                 .font(.caption.weight(date.isToday ? .bold : .medium))
                 .foregroundStyle(date.isToday ? .white : .primary)
@@ -28,10 +28,8 @@ struct DayCell: View {
                     .contentTransition(.numericText(value: balance))
             }
 
-            if hasTransactions {
-                Circle()
-                    .fill(date.isToday ? .white : .blue)
-                    .frame(width: 4, height: 4)
+            if !transactions.isEmpty {
+                CategoryIconsView(transactions: transactions, isToday: date.isToday)
             }
         }
         .frame(maxWidth: .infinity)

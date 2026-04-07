@@ -14,8 +14,14 @@ struct CalendarView: View {
     @State private var vm = CalendarViewModel()
     @State private var showQuickAdd = false
     @State private var showPaywall = false
+    @State private var showShareCard = false
+    @State private var showRadialMenu = false
+    @State private var radialMenuDate: Date = .now
     @State private var dragOffset: CGFloat = 0
     @State private var dismissedWidgetPromo = false
+    @State private var showGoals = false
+    @State private var currentMilestone: Milestone? = nil
+    @State private var milestoneTracker = MilestoneTracker()
 
     private var settings: AppSettings? { settingsArray.first }
 
@@ -31,6 +37,7 @@ struct CalendarView: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         monthNavigationHeader
+                        BudgetGoalRingsBar(onShowGoals: { showGoals = true })
                         widgetPromoBanner
                         balanceChart
                         calendarGrid
@@ -47,6 +54,14 @@ struct CalendarView: View {
             .navigationTitle("Balance Horizon")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showShareCard = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.subheadline)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Today") {
                         vm.goToToday()
@@ -74,15 +89,78 @@ struct CalendarView: View {
             .sheet(isPresented: $showPaywall) {
                 PaywallView()
             }
-            .onChange(of: transactions.count) { refreshProjections() }
+            .sheet(isPresented: $showShareCard) {
+                ShareMonthCardView()
+            }
+            .sheet(isPresented: $showGoals) {
+                BudgetGoalsView()
+            }
+            .overlay {
+                if showRadialMenu {
+                    RadialQuickAddMenu(
+                        isPresented: $showRadialMenu,
+                        selectedDate: radialMenuDate
+                    ) { category, amount in
+                        let tx = Transaction(
+                            date: radialMenuDate,
+                            amount: amount,
+                            type: .expense,
+                            category: category
+                        )
+                        context.insert(tx)
+                    }
+                }
+            }
+            .celebrationOverlay(milestone: currentMilestone) {
+                currentMilestone = nil
+            }
+            .onChange(of: transactions.count) {
+                refreshProjections()
+                checkMilestones()
+            }
             .onChange(of: vm.currentMonth) { refreshProjections() }
             .onChange(of: settings?.startingBalance) { refreshProjections() }
-            .onAppear { refreshProjections() }
+            .onAppear {
+                refreshProjections()
+                checkMilestones()
+            }
         }
     }
 
     private func refreshProjections() {
         vm.refreshProjections(transactions: transactions, settings: settings)
+    }
+
+    private func checkMilestones() {
+        guard let settings else { return }
+        let daysSinceStart: Int
+        if let first = settings.firstLaunchDate {
+            daysSinceStart = Calendar.current.dateComponents([.day], from: first, to: .now).day ?? 0
+        } else {
+            daysSinceStart = 0
+        }
+
+        let todayBalance = vm.balanceForDay(Calendar.current.startOfDay(for: .now)) ?? settings.startingBalance
+
+        // Compute savings rate
+        let cal = Calendar.current
+        let monthStart = cal.date(from: cal.dateComponents([.year, .month], from: .now))!
+        let monthTransactions = transactions.filter { $0.date >= monthStart }
+        let income = monthTransactions.filter { $0.type == .income }.reduce(0) { $0 + $1.amount }
+        let expenses = monthTransactions.filter { $0.type == .expense }.reduce(0) { $0 + $1.amount }
+        let savingsRate = income > 0 ? (income - expenses) / income : 0
+
+        if let milestone = milestoneTracker.checkMilestones(
+            transactionCount: transactions.count,
+            daysSinceStart: daysSinceStart,
+            currentBalance: todayBalance,
+            savingsRate: savingsRate
+        ) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                currentMilestone = milestone
+                milestoneTracker.markShown(milestone)
+            }
+        }
     }
 
     // MARK: - Widget Promo Banner (Paywall Trigger)
@@ -265,9 +343,17 @@ struct CalendarView: View {
                         date: date,
                         balance: vm.balanceForDay(date),
                         balanceColor: vm.balanceColor(vm.balanceForDay(date) ?? 0),
-                        hasTransactions: !vm.transactionsForDay(date).isEmpty
+                        transactions: vm.transactionsForDay(date)
                     )
                     .onTapGesture { vm.selectDay(date) }
+                    .onLongPressGesture {
+                        let gen = UIImpactFeedbackGenerator(style: .heavy)
+                        gen.impactOccurred()
+                        radialMenuDate = date
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            showRadialMenu = true
+                        }
+                    }
                     .transition(.scale.combined(with: .opacity))
                 }
             }

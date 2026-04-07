@@ -14,7 +14,7 @@ struct BalanceHorizonApp: App {
             ContentRootView()
                 .environment(notificationManager)
         }
-        .modelContainer(for: [Transaction.self, AppSettings.self, Account.self])
+        .modelContainer(for: [Transaction.self, AppSettings.self, Account.self, BudgetGoal.self])
     }
 }
 
